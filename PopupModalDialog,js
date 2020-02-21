@@ -1,0 +1,59 @@
+function sleep(ms) {
+    return new Promise(resolve => setTimeout(resolve, ms));
+}
+
+window.showModalDialog = window.showModalDialog || async function (url, arg, opt) {
+
+        url = url || ''; //URL of a dialog
+        arg = arg || null; //arguments to a dialog
+        opt = opt || 'dialogWidth:300px;dialogHeight:200px';
+        opt = opt.replace(/dialog/gi, "")
+            .replace(/height:[^;]*/gi, "height:100%")
+            .replace(/width:[^;]*/gi, "width:80%");
+        //---options: dialogTop; dialogLeft; dialogWidth; dialogHeight or CSS styles
+       
+        var returnVal;
+        var dialog = this.document.body.appendChild(this.document.createElement('dialog'));
+        dialog.setAttribute('style', opt);
+        dialog.innerHTML = '<a href="#" id="dialog-close" style="position: absolute; top: 0; right: 4px; font-size: 20px; color: #000; text-decoration: none; outline: none;">&times;</a><iframe id="dialog-body" src="' + url + '" style="border: 0; width: 100%; height: 100%;"></iframe>';
+        this.document.getElementById('dialog-body').contentWindow.dialogArguments = arg;
+        var self = this;
+        var popupWindow = this.document.getElementById('dialog-body').contentWindow;
+        popupWindow.returnValue = null;
+        popupWindow.popupClosed = false;
+        var closePopUp = popupWindow.popupClosed;
+        this.document.getElementById('dialog-close').addEventListener('click', function (e) {
+            var ifr = self.document.getElementById('dialog-body');
+            var returnValue = self.document.getElementById('dialog-body').contentWindow.returnValue;
+
+            popupWindow.popupClosed = true;
+
+            returnVal = returnValue;
+        });
+
+       
+        popupWindow.ClosePopup = function () {
+            this.popupClosed = true;
+        };
+        dialog.showModal();
+         returnVal = this.document.getElementById('dialog-body').contentWindow.returnValue;
+
+
+        while (!closePopUp) {
+            await sleep(1000);
+            var childwindow = this.document.getElementById('dialog-body');
+            returnVal = childwindow !== null ? childwindow.contentWindow.returnValue : -1;
+            closePopUp = popupWindow.popupClosed;
+
+        }
+        
+        var ifr = this.document.getElementById('dialog-body');
+        if (ifr)
+            ifr.remove();
+        dialog.close();
+        dialog.remove();
+        //
+        return returnVal;
+
+    };
+})();
